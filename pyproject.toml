@@ -1,0 +1,24 @@
+[project]
+name = "word-template-pro"
+version = "0.1.0"
+description = "DOCX Template Manager with dynamic field types"
+requires-python = ">=3.11"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pyside6>=6.7.0",
+    "python-docx>=1.2.0",
+    "sqlalchemy>=2.0.0",
+]
+
+[project.scripts]
+word-template-pro = "word_template_pro.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/word_template_pro"]
+
+[tool.uv]
+package = true

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Database
+*.db
+*.sqlite3
+word_template_pro.db
+
+# Output
+output/
+*.docx
+!sample_template.docx
+!test.docx
+
+# Logs
+*.log
