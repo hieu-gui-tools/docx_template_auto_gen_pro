@@ -35,22 +35,36 @@ def extract_fields(docx_path: str | Path) -> list[dict]:
     fields: list[dict] = []
     seen: set[str] = set()
 
-    def _scan_text(text: str) -> list[tuple[str, str, str]]:
+    def _scan_text(text: str) -> list[dict]:
         res = []
         for m in FIELD_PATTERN.finditer(text):
             name = m.group(1).strip()
-            ftype = m.group(2).strip() if m.group(2) else "text"
-            res.append((name, ftype, m.group(0)))
+            ftype_raw = m.group(2).strip() if m.group(2) else ""
+            if not ftype_raw or ftype_raw.lower() not in VALID_TYPES:
+                ftype = "text"
+                is_default = True
+            else:
+                ftype = ftype_raw
+                is_default = False
+            res.append({
+                "name": name,
+                "type": ftype,
+                "raw": m.group(0),
+                "is_default": is_default,
+                "original_type": ftype_raw
+            })
         return res
 
     # Scan paragraphs
     for para in doc.paragraphs:
         full = _runs_full_text(para)
-        for name, ftype, raw in _scan_text(full):
+        for field_dict in _scan_text(full):
+            name = field_dict["name"]
+            ftype = field_dict["type"]
             key = f"{name}|{ftype}"
             if key not in seen:
                 seen.add(key)
-                fields.append({"name": name, "type": ftype, "raw": raw})
+                fields.append(field_dict)
 
     # Scan tables
     for table in doc.tables:
@@ -58,11 +72,13 @@ def extract_fields(docx_path: str | Path) -> list[dict]:
             for cell in row.cells:
                 for para in cell.paragraphs:
                     full = _runs_full_text(para)
-                    for name, ftype, raw in _scan_text(full):
+                    for field_dict in _scan_text(full):
+                        name = field_dict["name"]
+                        ftype = field_dict["type"]
                         key = f"{name}|{ftype}"
                         if key not in seen:
                             seen.add(key)
-                            fields.append({"name": name, "type": ftype, "raw": raw})
+                            fields.append(field_dict)
 
     # Scan headers/footers
     for section in doc.sections:
@@ -70,11 +86,13 @@ def extract_fields(docx_path: str | Path) -> list[dict]:
             if hdr is not None:
                 for para in hdr.paragraphs:
                     full = _runs_full_text(para)
-                    for name, ftype, raw in _scan_text(full):
+                    for field_dict in _scan_text(full):
+                        name = field_dict["name"]
+                        ftype = field_dict["type"]
                         key = f"{name}|{ftype}"
                         if key not in seen:
                             seen.add(key)
-                            fields.append({"name": name, "type": ftype, "raw": raw})
+                            fields.append(field_dict)
 
     return fields
 

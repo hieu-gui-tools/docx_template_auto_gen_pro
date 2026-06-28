@@ -454,13 +454,27 @@ class MainWindow(QMainWindow):
             row_h.setContentsMargins(14, 10, 14, 10)
             row_h.setSpacing(12)
 
+            is_default = field.get("is_default", False)
+            original_type = field.get("original_type", "")
+
             # Label + type tag
             lbl_col = QVBoxLayout()
             lbl_col.setSpacing(2)
             f_lbl = QLabel(name)
             f_lbl.setObjectName("fieldLabel")
-            type_lbl = QLabel(ftype)
+            
+            display_type = original_type if (is_default and original_type) else ftype
+            type_lbl = QLabel(display_type)
             type_lbl.setObjectName("typeTag")
+            
+            if is_default:
+                # Đổi màu chữ sang màu vàng nhạt, nền tối, để báo cho user biết là type mặc định hoặc không hợp lệ
+                type_lbl.setStyleSheet("color: #ffff88; font-size: 11px; background: #2a2a15; border-radius: 4px; padding: 2px 6px;")
+                if original_type:
+                    type_lbl.setToolTip(f"Kiểu '{original_type}' không được hỗ trợ, tự động chuyển về 'text'.")
+                else:
+                    type_lbl.setToolTip("Không xác định kiểu, tự động mặc định là 'text'.")
+
             lbl_col.addWidget(f_lbl)
             lbl_col.addWidget(type_lbl)
             row_h.addLayout(lbl_col)
@@ -736,9 +750,13 @@ class MainWindow(QMainWindow):
             geom_str = self.saveGeometry().toBase64().data().decode("utf-8")
             set_setting("window_geometry", geom_str)
             
-            python = sys.executable
+            from PySide6.QtCore import QProcess
+            if getattr(sys, 'frozen', False):
+                QProcess.startDetached(sys.executable, sys.argv[1:])
+            else:
+                args = sys.orig_argv[1:] if hasattr(sys, 'orig_argv') else sys.argv
+                QProcess.startDetached(sys.executable, args)
             QApplication.quit()
-            subprocess.Popen([python] + sys.argv)
 
     def closeEvent(self, event):
         geom_str = self.saveGeometry().toBase64().data().decode("utf-8")

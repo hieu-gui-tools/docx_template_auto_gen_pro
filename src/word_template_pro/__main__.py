@@ -30,7 +30,12 @@ def main():
     palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ddeeff"))
     app.setPalette(palette)
 
-    icon_path = Path(__file__).parent.parent.parent / "icon.ico"
+    if getattr(sys, 'frozen', False):
+        base_dir = Path(sys._MEIPASS)
+    else:
+        base_dir = Path(__file__).parent.parent.parent
+        
+    icon_path = base_dir / "icon.ico"
     if icon_path.exists():
         app.setWindowIcon(QIcon(str(icon_path)))
 

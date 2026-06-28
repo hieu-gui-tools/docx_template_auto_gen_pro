@@ -22,3 +22,8 @@ packages = ["src/word_template_pro"]
 
 [tool.uv]
 package = true
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.21.0",
+]
